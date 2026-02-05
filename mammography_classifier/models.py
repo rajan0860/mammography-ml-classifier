@@ -9,6 +9,9 @@ from sklearn import svm, neighbors
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from .config import CONFIG
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.models import Sequential
+from scikeras.wrappers import KerasClassifier
 
 
 def evaluate_classifier(clf, features, classes, name):
@@ -118,3 +121,60 @@ def tune_knn(all_features_scaled, all_classes):
     
     print(f"\nBest KNN - n_neighbors={best_k}, CV Score: {best_score:.4f}")
     return best_k, best_score
+
+def create_keras_model(input_dim=4):
+    """Create a Keras neural network model for binary classification.
+    
+    Args:
+        input_dim: Number of input features (default 4 for mammography dataset)
+        
+    Returns:
+        Compiled Keras Sequential model
+    """
+    model = Sequential()
+    # Input layer: feature inputs going into a 6-unit layer
+    model.add(Dense(6, input_dim=input_dim, kernel_initializer='normal', activation='relu'))
+    # Output layer with binary classification (benign or malignant)
+    model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))
+    # Compile model with adam optimizer
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
+
+
+def get_keras_classifier(input_dim=4, epochs=100, verbose=0):
+    """Get a KerasClassifier wrapped for scikit-learn compatibility.
+    
+    Args:
+        input_dim: Number of input features
+        epochs: Number of training epochs
+        verbose: Verbosity level (0=silent, 1=progress bar, 2=one line per epoch)
+        
+    Returns:
+        KerasClassifier instance compatible with scikit-learn
+    """
+    return KerasClassifier(
+        model=create_keras_model,
+        model__input_dim=input_dim,
+        epochs=epochs,
+        verbose=verbose
+    )
+
+
+def evaluate_keras_classifier(all_features_scaled, all_classes, epochs=100, verbose=0):
+    """Evaluate the Keras neural network using cross-validation.
+    
+    Args:
+        all_features_scaled: StandardScaler features
+        all_classes: Target classes
+        epochs: Number of training epochs
+        verbose: Verbosity level
+        
+    Returns:
+        float: Mean cross-validation score
+    """
+    input_dim = all_features_scaled.shape[1]
+    estimator = get_keras_classifier(input_dim=input_dim, epochs=epochs, verbose=verbose)
+    cv_scores = cross_val_score(estimator, all_features_scaled, all_classes, cv=CONFIG['cv_folds'])
+    mean_score = cv_scores.mean()
+    print(f"Keras Neural Network: {mean_score:.4f}")
+    return mean_score

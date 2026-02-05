@@ -21,6 +21,7 @@ from mammography_classifier import (
     define_classifiers,
     evaluate_all_classifiers,
     tune_knn,
+    evaluate_keras_classifier,
     visualize_decision_tree,
     print_results,
 )
@@ -59,10 +60,17 @@ def main():
         all_classes
     )
     
-    # Step 6: Tune KNN hyperparameters
+    # Step 6: Evaluate Keras Neural Network (TensorFlow)
+    print("\n" + "="*60)
+    print("TENSORFLOW/KERAS NEURAL NETWORK EVALUATION")
+    print("="*60 + "\n")
+    keras_score = evaluate_keras_classifier(all_features_scaled, all_classes)
+    results['Keras Neural Network'] = keras_score
+    
+    # Step 7: Tune KNN hyperparameters
     tune_knn(all_features_scaled, all_classes)
     
-    # Step 7: Print results summary
+    # Step 8: Print results summary
     print_results(results)
 
 

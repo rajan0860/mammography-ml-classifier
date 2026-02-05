@@ -13,7 +13,8 @@ from .models import (
     evaluate_classifier,
     define_classifiers,
     evaluate_all_classifiers,
-    tune_knn
+    tune_knn,
+    evaluate_keras_classifier
 )
 from .visualization import visualize_decision_tree, print_results
 
@@ -26,6 +27,7 @@ __all__ = [
     'define_classifiers',
     'evaluate_all_classifiers',
     'tune_knn',
+    'evaluate_keras_classifier',
     'visualize_decision_tree',
     'print_results',
 ]
